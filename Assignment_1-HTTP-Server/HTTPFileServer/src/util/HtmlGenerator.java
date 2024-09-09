@@ -25,11 +25,14 @@ public class HtmlGenerator {
         htmlContent.append(" <ul>\n");
 
         for(FileSystemNode child: node.getChildren()){
-            System.out.println(child);
+            String tagText = child.name;
+            if(child.isDirectory){
+                tagText = "<b><i>" + child.name + "</i></b>";
+            }
             htmlContent.append("  <li><a href=\"")
                     .append(convertToHtmlPath(child.pathFromRoot))
                     .append("\"> ")
-                    .append(child.name)
+                    .append(tagText)
                     .append("</a></li>\n");
         }
 
