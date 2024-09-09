@@ -5,18 +5,24 @@ import util.Config;
 import java.io.File;
 import java.util.ArrayList;
 
-public class Node {
+public class FileSystemNode {
     public String name;
     public Boolean isValid;
     public Boolean isDirectory;
     public String type;
     public String pathFromRoot;
 
+    public File file;
+
     // this path starts after root directory
     // so '/' means the whole root dir, '/dir1' means dir1 under root
-    public Node(String pathFromRoot) {
+    public FileSystemNode(String pathFromRoot) {
         this.pathFromRoot = pathFromRoot;
+        // here, no stream is actually being opened
+        // so no need to close
+        // just a File object, storing it in the node object for convenience
         File file = new File(Config.rootDirName + pathFromRoot);
+        this.file = file;
         if (file.exists()) {
             this.name = file.getName();
             this.isValid = true;
@@ -35,14 +41,13 @@ public class Node {
     }
 
     // only gives own children, not recursive
-    public ArrayList<Node> getChildren() {
-        File file = new File(pathFromRoot);
-        ArrayList<Node>children = new ArrayList<>();
+    public ArrayList<FileSystemNode> getChildren() {
+        ArrayList<FileSystemNode>children = new ArrayList<>();
         if(file.exists() && file.isDirectory()){
             File[] contents = file.listFiles();
             if (contents != null) {
                 for (File f : contents) {
-                    Node child = new Node(getRelativePath(f, Config.rootPath));
+                    FileSystemNode child = new FileSystemNode(getRelativePath(f, Config.rootPath));
                     children.add(child);
                 }
             }

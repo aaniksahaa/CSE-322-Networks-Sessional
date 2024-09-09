@@ -1,52 +1,84 @@
-import java.io.File;
+import util.Config;
+import util.HtmlGenerator;
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Date;
 
 public class Main {
+    static final int PORT = Config.SERVER_PORT;
 
-    public static void main(String[] args) {
-        String rootDirName = "root";
-        // Example usage:
-        String path = "/"; // Replace with your root path
-        String pathFromRoot = rootDirName + path;
-
-        File rootDir = new File(rootDirName);
-        File file = new File(pathFromRoot);
-
-        if (file.exists()) {
-            // Start listing files and directories relative to the root
-            listFilesAndDirs(file, rootDir.getAbsolutePath());
-        } else {
-            System.out.println("Root directory does not exist.");
+    public static String readFileData(File file, int fileLength) throws IOException {
+        FileInputStream fileIn = null;
+        byte[] fileData = new byte[fileLength];
+        try {
+            fileIn = new FileInputStream(file);
+            fileIn.read(fileData);
+        } finally {
+            if (fileIn != null)
+                fileIn.close();
         }
+        return String.valueOf(fileData);
     }
 
-    public static void listFilesAndDirs(File file, String rootPath) {
-        // Check if it is a directory
-        if (file.isDirectory()) {
-            System.out.println("Directory: " + getRelativePath(file, rootPath));
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(PORT);
+        System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
 
-            // Get all files and directories within the directory
-            File[] contents = file.listFiles();
+        File file = new File("index.html");
+        FileInputStream fis = new FileInputStream(file);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
 
-            if (contents != null) {
-                for (File f : contents) {
-                    if (f.isDirectory()) {
-                        // Recursively traverse directories
-                        listFilesAndDirs(f, rootPath);
-                    } else {
-                        // If it's a file, print its name
-                        System.out.println("File: " + getRelativePath(f, rootPath));
-                    }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while(( line = br.readLine()) != null ) {
+            sb.append( line );
+            sb.append( '\n' );
+        }
+
+//        String content = sb.toString();
+
+        while(true)
+        {
+            Socket s = serverSocket.accept();
+            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter pr = new PrintWriter(s.getOutputStream());
+
+            String requestLine = in.readLine();
+            System.out.println("input : "+requestLine);
+
+            // String content = "<html>Hello</html>";
+            if(requestLine == null) continue;
+            if(requestLine.length() > 0) {
+                String[] parts = requestLine.split(" ");
+
+                String method = parts[0];
+                String path = parts[1];
+                String httpVersion = parts[2];
+
+                if(method.equals("GET"))
+                {
+                    System.out.println(requestLine);
+                    String content = HtmlGenerator.generateHtml(path);
+                    pr.write("HTTP/1.1 200 OK\r\n");
+                    pr.write("Server: Java HTTP Server: 1.0\r\n");
+                    pr.write("Date: " + new Date() + "\r\n");
+                    pr.write("Content-Type: text/html\r\n");
+                    pr.write("Content-Length: " + content.length() + "\r\n");
+                    pr.write("\r\n");
+                    pr.write(content);
+                    pr.flush();
+                }
+                else
+                {
+
                 }
             }
-        } else {
-            // If it's a file, just print its name
-            System.out.println("File: " + getRelativePath(file, rootPath));
+
+            s.close();
         }
+
     }
 
-    // Helper method to get the relative path with respect to the root directory
-    public static String getRelativePath(File file, String rootPath) {
-        String absolutePath = file.getAbsolutePath();
-        return absolutePath.substring(rootPath.length());
-    }
 }
