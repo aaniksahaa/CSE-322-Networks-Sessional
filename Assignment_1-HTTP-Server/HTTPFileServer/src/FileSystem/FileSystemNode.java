@@ -1,8 +1,11 @@
 package FileSystem;
 
 import util.Config;
+import util.Helper;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class FileSystemNode {
@@ -13,10 +16,11 @@ public class FileSystemNode {
     public String pathFromRoot;
 
     public File file;
+    public String contentType;
 
     // this path starts after root directory
     // so '/' means the whole root dir, '/dir1' means dir1 under root
-    public FileSystemNode(String pathFromRoot) {
+    public FileSystemNode(String pathFromRoot) throws IOException {
         this.pathFromRoot = pathFromRoot;
         // here, no stream is actually being opened
         // so no need to close
@@ -33,15 +37,15 @@ public class FileSystemNode {
             else {
                 this.isDirectory = false;
                 this.type = getFileExtension(this.name);
+                this.contentType = Helper.getContentType(file);
             }
         } else {
-            this.name = "";
             this.isValid = false;
         }
     }
 
     // only gives own children, not recursive
-    public ArrayList<FileSystemNode> getChildren() {
+    public ArrayList<FileSystemNode> getChildren() throws IOException{
         ArrayList<FileSystemNode>children = new ArrayList<>();
         if(file.exists() && file.isDirectory()){
             File[] contents = file.listFiles();
@@ -53,6 +57,18 @@ public class FileSystemNode {
             }
         }
         return children;
+    }
+    public Boolean isTextOrImage(){
+        if (contentType.startsWith("text/") || contentType.startsWith("image/")) {
+            return true;
+        }
+        return false;
+    }
+    public Boolean isTextOrImageOrVideo(){
+        if (contentType.startsWith("text/") || contentType.startsWith("image/") || contentType.startsWith("video/")) {
+            return true;
+        }
+        return false;
     }
     private String getRelativePath(File file, String rootPath) {
         String absolutePath = file.getAbsolutePath();

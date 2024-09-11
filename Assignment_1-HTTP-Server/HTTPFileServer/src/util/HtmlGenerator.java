@@ -2,34 +2,35 @@ package util;
 import FileSystem.FileSystemNode;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class HtmlGenerator {
-    public static String generateHtml(String pathFromRoot) throws IOException {
-        FileSystemNode node = new FileSystemNode(pathFromRoot);
-        System.out.println(node);
-        // Start building the HTML content
+    public static String generateDirectoryListingHtml(FileSystemNode node) throws IOException {
+
         StringBuilder htmlContent = new StringBuilder();
 
         // Append the HTML header
         htmlContent.append("<!DOCTYPE HTML>\n");
         htmlContent.append("<html>\n");
         htmlContent.append(" <head>\n");
-        htmlContent.append("  <title>Index of ").append(pathFromRoot).append("</title>\n");
+        htmlContent.append("  <title>Index of ").append(node.pathFromRoot).append("</title>\n");
         htmlContent.append(" </head>\n");
         htmlContent.append(" <body>\n");
-        htmlContent.append(" <h1>Index of ").append(pathFromRoot).append("</h1>\n");
+        htmlContent.append(" <h1>Index of ").append(node.pathFromRoot).append("</h1>\n");
         htmlContent.append(" <ul>\n");
 
         for(FileSystemNode child: node.getChildren()){
+            String hrefTarget = "_self";
+            if(!child.isDirectory){
+                hrefTarget = "_blank";
+            }
             String tagText = child.name;
             if(child.isDirectory){
                 tagText = "<b><i>" + child.name + "</i></b>";
             }
-            htmlContent.append("  <li><a href=\"")
+            htmlContent.append("  <li><a target=\"" + hrefTarget +"\" href=\"")
                     .append(convertToHtmlPath(child.pathFromRoot))
                     .append("\"> ")
                     .append(tagText)
@@ -62,7 +63,8 @@ public class HtmlGenerator {
         String directory = "/teach/CSE322";
 
         try {
-            System.out.println(generateHtml("/"));
+            FileSystemNode node = new FileSystemNode("/");
+            System.out.println(generateDirectoryListingHtml(node));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,24 +1,13 @@
+import FileSystem.FileSystemNode;
+
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class Test {
-
-    public static void readFileInChunks(String filePath) {
-        byte[] buffer = new byte[1024]; // buffer of 1024 bytes
-        try (FileInputStream fis = new FileInputStream(filePath)) {
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                System.out.println("Read " + bytesRead + " bytes.");
-                String chunk = new String(buffer, 0, bytesRead);
-                System.out.println(chunk);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        String filePath = "root/file1.txt";
-        readFileInChunks(filePath);
+    public static void main(String[] args) throws IOException{
+        String filePath = "/v.mp4";
+        FileSystemNode node = new FileSystemNode(filePath);
+        System.out.println(node.name);
     }
 }
