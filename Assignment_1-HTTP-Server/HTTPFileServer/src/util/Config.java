@@ -6,6 +6,7 @@ public class Config {
     public static final String HTTP_VERSION = "HTTP/1.1";
     // filesystem
     public static final String rootDirName = "root";
+    public static final String uploadDir = "root/uploaded";
     public static final String rootPath = (new File(rootDirName)).getAbsolutePath();
 
     // server
@@ -24,6 +25,6 @@ public class Config {
 
     public static final int CHUNK_SIZE = 8192;
 
-    public static final int artificalSendingDelayMs = 5;
+    public static final int ARTIFICAL_SENDING_DELAY_MS = 0;
 
 }

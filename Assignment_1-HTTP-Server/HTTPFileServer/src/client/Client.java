@@ -11,7 +11,7 @@ public class Client {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("Enter the file path to upload (or 'exit' to quit): ");
+            System.out.println("\nType the file path to upload (or 'exit' to quit): ");
             String filePath = scanner.nextLine();
 
             if (filePath.equalsIgnoreCase("exit")) {
@@ -37,7 +37,7 @@ public class Client {
              OutputStream os = socket.getOutputStream();
              InputStream is = socket.getInputStream()) {
 
-            System.out.println("Connection established at port: " + socket.getPort());
+            System.out.println("\nConnection established at port: " + socket.getPort());
 
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
             PrintWriter pr = new PrintWriter(os);
@@ -64,14 +64,6 @@ public class Client {
                             }
                         }
                     }
-//                    while ((responseLine = in.readLine()) != null) {
-//                        System.out.println("Server response: " + responseLine);
-//                        if (responseLine.contains("Bad")) {
-//                            System.out.println("Error from server: " + responseLine);
-//                            stopSending[0] = true;
-//                            break;
-//                        }
-//                    }
                 } catch (IOException e) {
                     System.err.println("Error reading server response: " + e.getMessage());
                 }
@@ -84,15 +76,15 @@ public class Client {
             while (!stopSending[0] && (bytesRead = fis.read(buffer)) != -1) {
                 os.write(buffer, 0, bytesRead);
                 os.flush();
-                Thread.sleep(Config.artificalSendingDelayMs); // Simulate artificial delay if needed
+                Thread.sleep(Config.ARTIFICAL_SENDING_DELAY_MS); // Simulate artificial delay if needed
             }
 
             readThread.join();
 
             if (!stopSending[0]) {
-                System.out.println("\nFile " + file.getName() +" uploaded successfully.");
+                System.out.println("\nFile " + file.getName() +" uploaded successfully.\n");
             } else {
-                System.out.println("\nFile upload was stopped due to server error.");
+                System.out.println("\nFile upload was stopped due to server error.\n");
             }
 
         } catch (IOException | InterruptedException e) {

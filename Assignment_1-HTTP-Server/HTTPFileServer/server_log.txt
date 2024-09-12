@@ -1,0 +1,11 @@
+Request:
+GET /dir1 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 14:13:14 BDT 2024
+Content-Type: text/html
+Content-Length: 274
+
+
