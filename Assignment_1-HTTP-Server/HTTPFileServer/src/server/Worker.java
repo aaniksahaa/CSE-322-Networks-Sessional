@@ -64,7 +64,8 @@ public class Worker extends Thread {
                             String htmlContent = HtmlGenerator.generateImageHtml(node);
                             sendStringContent(htmlContent,"text/html");
                         } else {
-                            sendFile(node);
+                            // enforce download if not text or image
+                            sendFileAsAttachment(node);
                         }
                     } else {
                         System.out.println("Error 404: Directory or File not found...");
@@ -160,17 +161,16 @@ public class Worker extends Thread {
         pr.flush();
     }
 
-    private void sendFile(FileSystemNode node) throws IOException {
+    private void sendFileAsAttachment(FileSystemNode node) throws IOException {
         File file = node.file;
 
         writeHeaderPrimer(OK);
         responseHeaderBuilder.append("Content-Type: " + node.contentType + "\r\n");
         responseHeaderBuilder.append("Content-Length: " + file.length() + "\r\n");
-        if(!node.isTextOrImage()){
-            // send as attachment
-            // to enforce download
-            responseHeaderBuilder.append("Content-Disposition: attachment; filename=\"" + file.getName() + "\"\r\n");
-        }
+
+        // send as attachment to enforce download
+        responseHeaderBuilder.append("Content-Disposition: attachment; filename=\"" + file.getName() + "\"\r\n");
+
         writeHeaderEnd();
         sendResponseHeader();
 
@@ -196,11 +196,6 @@ public class Worker extends Thread {
 
         pr.write(content);
         pr.flush();
-    }
-
-    public void sendDirectoryListing(FileSystemNode node) throws IOException{
-        String htmlContent = HtmlGenerator.generateDirectoryListingHtml(node);
-        sendStringContent(htmlContent,"text/html");
     }
 
     private boolean isUploadable(String contentType) {

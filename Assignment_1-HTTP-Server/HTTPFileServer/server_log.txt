@@ -1,11 +1,414 @@
 Request:
+UPLOAD eiffel-tower.jpg
+
+Response Header:
+HTTP/1.1 500 Server Error. File could not be uploaded
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:12:40 BDT 2024
+Content-Type: text/html
+Content-Length: 79
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:24:50 BDT 2024
+Content-Type: text/html
+Content-Length: 462
+
+
+Request:
+GET /file1.txt HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:24:51 BDT 2024
+Content-Type: text/html
+Content-Length: 153
+
+
+Request:
+GET /images HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:24:53 BDT 2024
+Content-Type: text/html
+Content-Length: 375
+
+
+Request:
+GET /images/taj-mahal.jpg HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:24:54 BDT 2024
+Content-Type: text/html
+Content-Length: 3373247
+
+
+Request:
+GET /doc1.docx HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:24:59 BDT 2024
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+Content-Length: 11260
+Content-Disposition: attachment; filename="doc1.docx"
+
+
+Request:
 GET /dir1 HTTP/1.1
 
 Response Header:
 HTTP/1.1 200 OK
 Server: Java HTTP Server: 1.0
-Date: Thu Sep 12 14:13:14 BDT 2024
+Date: Thu Sep 12 15:25:02 BDT 2024
 Content-Type: text/html
 Content-Length: 274
+
+
+Request:
+UPLOAD lecture-1.mp4
+
+Response Header:
+HTTP/1.1 500 Server Error. File could not be uploaded
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:01 BDT 2024
+Content-Type: text/html
+Content-Length: 79
+
+
+Request:
+UPLOAD lecture-1.mp4
+
+Response Header:
+HTTP/1.1 200 File uploaded successfully
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:13 BDT 2024
+Content-Type: text/html
+Content-Length: 65
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:18 BDT 2024
+Content-Type: text/html
+Content-Length: 462
+
+
+Request:
+GET /uploaded HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:19 BDT 2024
+Content-Type: text/html
+Content-Length: 222
+
+
+Request:
+GET /uploaded/lecture-1.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:20 BDT 2024
+Content-Type: video/mp4
+Content-Length: 38419033
+Content-Disposition: attachment; filename="lecture-1.mp4"
+
+
+Request:
+UPLOAD lecture-2.mp4
+
+Response Header:
+HTTP/1.1 200 File uploaded successfully
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:54 BDT 2024
+Content-Type: text/html
+Content-Length: 65
+
+
+Request:
+GET /uploaded HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:57 BDT 2024
+Content-Type: text/html
+Content-Length: 301
+
+
+Request:
+GET /uploaded/lecture-2.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:26:58 BDT 2024
+Content-Type: video/mp4
+Content-Length: 43600649
+Content-Disposition: attachment; filename="lecture-2.mp4"
+
+
+Request:
+UPLOAD lecture-5.mp4
+
+Response Header:
+HTTP/1.1 200 File uploaded successfully
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:28:33 BDT 2024
+Content-Type: text/html
+Content-Length: 65
+
+
+Request:
+GET /uploaded HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:28:40 BDT 2024
+Content-Type: text/html
+Content-Length: 380
+
+
+Request:
+GET /dir1 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:28:43 BDT 2024
+Content-Type: text/html
+Content-Length: 274
+
+
+Request:
+GET /dir1/dir2 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:28:44 BDT 2024
+Content-Type: text/html
+Content-Length: 292
+
+
+Request:
+GET /dir1/dir2/send.txt HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Thu Sep 12 15:28:45 BDT 2024
+Content-Type: text/html
+Content-Length: 925
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:16:42 BDT 2024
+Content-Type: text/html
+Content-Length: 462
+
+
+Request:
+GET /favicon.ico HTTP/1.1
+
+Response Header:
+HTTP/1.1 404 Not Found
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:16:43 BDT 2024
+Content-Type: text/html
+Content-Length: 48
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:20:34 BDT 2024
+Content-Type: text/html
+Content-Length: 532
+
+
+Request:
+GET /videos HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:20:35 BDT 2024
+Content-Type: text/html
+Content-Length: 557
+
+
+Request:
+GET /videos/LIFE%20AT%20MIT%20FROM%20BUET%20LECTURER%20_%20Shashata%20Sawmya%20_%20Emran%20Mostofa%20_%20MIT%20_%20BUET.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 404 Not Found
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:20:36 BDT 2024
+Content-Type: text/html
+Content-Length: 48
+
+
+Request:
+GET /videos HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:21:57 BDT 2024
+Content-Type: text/html
+Content-Length: 265
+
+
+Request:
+GET /videos/v1.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:21:58 BDT 2024
+Content-Type: video/mp4
+Content-Length: 492176805
+Content-Disposition: attachment; filename="v1.mp4"
+
+
+Request:
+GET /videos/v2.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:22:15 BDT 2024
+Content-Type: video/mp4
+Content-Length: 634012097
+Content-Disposition: attachment; filename="v2.mp4"
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:25:45 BDT 2024
+Content-Type: text/html
+Content-Length: 532
+
+
+Request:
+GET / HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:25:46 BDT 2024
+Content-Type: text/html
+Content-Length: 532
+
+
+Request:
+GET /doc1.docx HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:25:47 BDT 2024
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+Content-Length: 11260
+Content-Disposition: attachment; filename="doc1.docx"
+
+
+Request:
+GET /file1.txt HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:26:10 BDT 2024
+Content-Type: text/html
+Content-Length: 153
+
+
+Request:
+GET /images HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:26:14 BDT 2024
+Content-Type: text/html
+Content-Length: 375
+
+
+Request:
+GET /images/eiffel-tower.jpg HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:26:16 BDT 2024
+Content-Type: text/html
+Content-Length: 3678937
+
+
+Request:
+GET /videos HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:26:25 BDT 2024
+Content-Type: text/html
+Content-Length: 265
+
+
+Request:
+GET /videos/v1.mp4 HTTP/1.1
+
+Response Header:
+HTTP/1.1 200 OK
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:26:26 BDT 2024
+Content-Type: video/mp4
+Content-Length: 492176805
+Content-Disposition: attachment; filename="v1.mp4"
+
+
+Request:
+UPLOAD Cisco Packet Tracer.lnk
+
+Response Header:
+HTTP/1.1 400 Invalid filename or format. Only text and image files are accepted.
+Server: Java HTTP Server: 1.0
+Date: Wed Sep 18 11:28:40 BDT 2024
+Content-Type: text/html
+Content-Length: 106
 
 

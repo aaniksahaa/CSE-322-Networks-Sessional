@@ -13,4 +13,23 @@ public class Helper {
         return contentType;
     }
 
+    public static void initializeUploadDir(){
+        File uploadDirectory = new File(Config.uploadDir);
+        makeDir(uploadDirectory);
+    }
+
+    public static void makeDir(File directory){
+        System.out.println("\nChecking Directory: "+directory.getName());
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("Directory created successfully.");
+            } else {
+                System.out.println("Failed to create the directory.");
+            }
+        } else {
+            System.out.println("Directory already exists.");
+        }
+        System.out.println("");
+    }
+
 }
