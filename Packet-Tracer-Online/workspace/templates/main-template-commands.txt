@@ -405,6 +405,15 @@ web browser: 100.10.10.2
 ** show ip int serial 0/0/0 | include access-list
 
 
+============ Dynamic Routing ==================== 
+
+router rip
+version 2        # Use RIP version 2 (recommended over v1)
+network 192.168.1.0		# ip at hand
+network 192.168.2.0		# ip at hand
+no auto-summary  # Disable automatic summarization
+
+
 ============ Command Dictionary ==================== 
 
 All show commands - in # mode
@@ -440,4 +449,5 @@ sh ip route
 - no shutdown
 - both side native vlan same 
 - no shutdown must be given in main interface, NOT subinterface
+- give default route when two routers are connected
 - 
