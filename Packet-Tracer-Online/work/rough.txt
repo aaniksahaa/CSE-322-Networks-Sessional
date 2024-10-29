@@ -1,0 +1,56 @@
+192.168.
+
+255.255.255.
+
+
+be careful
+
+- PRESS ctrl+shift+s at intervals often
+
+- After setting ip in a router interface, no shutdown must
+- Important port numbers
+    - 80 - HTTP
+    - 20 - FTP data
+    - 21 - FTP
+    - 23 - Telnet
+    - 25 - SMTP
+- All show commands must be in hash mode
+- subnet mask may vary according to question
+- acl must be applied to interfaces
+- wildcard mask is reverse of subnet mask
+- ACLs are order sensitive and also, have no extra ACLs
+- no shutdown
+- both side native vlan same 
+- no shutdown must be given in main interface, NOT subinterface
+- 
+
+router - 2901
+switch - 2960
+
+may add console wire to console port of switch
+
+
+
+
+int f0/1
+switchport mode access
+switchport access vlan 60
+
+
+int f0/2
+switchport mode access
+switchport access vlan 70
+
+
+int g0/1
+switchport mode trunk
+switchport trunk allowed vlan 60,70
+
+
+int g0/0.60
+encapsulation dot1q 60
+ip address 192.168.60.1 255.255.255.0
+int g0/0.70
+encapsulation dot1q 70
+ip address 192.168.70.1 255.255.255.0
+

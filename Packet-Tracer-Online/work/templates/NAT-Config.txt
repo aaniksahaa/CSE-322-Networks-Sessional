@@ -1,0 +1,50 @@
+-----------R1 -----------------------
+int g0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+
+int g0/1
+ip address 192.168.20.1 255.255.255.0
+no shutdown
+
+int s0/0/0
+ip address 100.1.1.1 255.255.255.252
+clock rate 64000
+no shutdown
+
+============ R2 ================
+int s0/0/0
+ip address 100.1.1.2 255.255.255.252
+no shutdown
+
+======static default route => Manually configuration
+R1:
+ip route 0.0.0.0  0.0.0.0   S0/0/0
+
+R2
+ip route 0.0.0.0  0.0.0.0   S0/0/0
+
+======= static nat if needed ============
+
+ip nat inside source static 192.168.10.254 209.165.201.5
+
+----- NAT config in R1 ---------------------------
+ip nat pool BUET-Pool 209.165.200.8 209.165.200.11  netmask 255.255.255.224
+access-list 1 permit 192.168.10.0   0.0.0.255
+access-list 1 permit 192.168.20.0   0.0.0.255
+ip nat inside source list 1 pool BUET-Pool
+
+>> if PAT, just use overload
+ip nat inside source list 1 pool BUET-Pool overload
+
+int g0/0
+ip nat inside
+int g0/1
+ip nat inside
+
+int s0/3/0
+ip nat outside
+
+================================
+100.100.100.2  Web server
+100.100.100.3  FTP server

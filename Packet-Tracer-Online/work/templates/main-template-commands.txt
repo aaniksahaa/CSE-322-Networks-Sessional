@@ -1,0 +1,443 @@
+
+---------------
+Theory
+---------------
+
+startup config - NVRAM
+running config - RAM
+motd - message of the day 
+
+---------------
+Setup
+---------------
+
+end devices
+	- ip
+	- subnet mask
+	- default gateway (the point where this network is conn to a router or multilayer switch)
+
+---------------
+Basic Commands
+---------------
+
+>> basic config
+
+- privileged access mode
+
+en
+
+- configure mode 
+
+conf t
+
+- line configuration mode 
+
+line console 0
+
+- host name
+
+conf t
+hostname sw-cse-1
+
+- user EXEC mode password
+
+conf t
+line console 0
+password 123
+login
+end 
+
+- privileged mode password 
+
+conf t
+enable secret 456
+
+- vty line password 
+
+conf t 
+line vty 0 15
+password 123
+login
+end 
+
+- disabling the passwords
+
+>> first go to exact mode etc 
+no password / no enable secret 
+
+- save password as encrypted in RC and SC files 
+
+conf t
+service password-encryption
+
+>> to check ->
+
+ex
+show run
+
+- banner message to show on login attempt
+
+conf t
+banner motd #only authorized ones are allowed#
+
+- showing config 
+
+show run 
+show start 
+
+- copying running-config from RAM to startup-config in NVRAM 
+
+copy run start 
+
+- reverting all changes in running-config 
+
+reload 
+
+=> These confs are the same for Router ans Switch 
+
+---------------
+Router Commands
+---------------
+
+>> router configuration
+
+- showing a interface
+
+en 
+show int fa0/0
+
+- configure interface 
+
+>> router ip config
+
+int fa0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown 
+
+
+int fa0/0
+decsription link to LAN 
+ip address 192.168.10.1 255.255.255.0
+ipv6 address ......../64
+no shutdown 
+exit 
+
+- show interface confs 
+
+en 
+show ip int brief 
+show ipv6 int brief 
+
+- show routing info in RAM 
+
+show ip route 
+show ip int 
+
+- router IP address on interfaces
+
+int g0/0
+ip address 172.17.10.1 255.255.255.0
+no shutdown
+
+int 
+
+---------------
+VLAN
+---------------
+
+>> commands on switch 
+
+>> we may assign IP to Switch by VLAN virtual port
+
+int vlan 1
+ip address 192.168.10.2
+no shutdown
+
+- vlan creation
+>> copy vlan creation commands to both switches
+
+conf t
+vlan 10
+name CSE
+vlan 30
+name ME
+
+- vlan port assignment
+
+int f0/1
+switchport mode access
+switchport access vlan 10
+
+int f0/2
+switchport mode access
+switchport access vlan 30
+
+- vlan trunk link config
+
+int g0/1
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allowed vlan 10,30,1
+
+- vlan router on a stick
+
+the line connecting switch and router will be trunk line 
+
+>> we need to divide one interface of the router into subinterfaces
+
+Router:
+
+int g0/0.10
+encapsulation dot1q 10
+ip address 192.168.10.1 255.255.255.0
+int g0/0.30
+encapsulation dot1q 30
+ip address 192.168.30.1 255.255.255.0
+
+ex
+
+int g0/0
+no shutdown
+
+- showing conf 
+
+en 
+show vlan brief 
+
+- creating vlans with name 
+
+conf t
+vlan 10
+name sales
+vlan 20
+name hr 
+
+- setting interface of switch to single vlan
+(these are the ports that are connected to end devices) 
+
+conf t
+int fa0/1 
+switchport mode access 
+switchport access vlan 10
+
+>> may also do with a range of interfaces
+
+conf t
+int range fa0/1-5
+switchport mode access
+switchport access vlan 10
+
+- trunk mode for switch to switch wire 
+(it supports data transfer between multiple vlans)
+
+conf t
+int fa4/1
+switchport mode trunk 
+switchport trunk native vlan 99 
+switchport trunk allowed vlan 10,20,30
+
+- delete vlan 
+
+no vlan 10
+
+** hard delete all
+delete vlan.dat
+
+---------------------------
+Multilayer Switch - layer 3
+---------------------------
+
+- first, vlan access and trunk settings same as normal
+
+- ip setting
+
+int vlan 10
+ip address 192.168.1.101 255.255.255.0
+no shutdown
+
+>> also must set these ips as default gateway
+
+
+
+---------------------------
+NAT
+---------------------------
+
+
+
+-----------R1 -----------------------
+int g0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+
+int g0/1
+ip address 192.168.20.1 255.255.255.0
+no shutdown
+
+int s0/0/0
+ip address 100.1.1.1 255.255.255.252
+clock rate 64000
+no shutdown
+
+============ R2 ================
+int s0/0/0
+ip address 100.1.1.2 255.255.255.252
+no shutdown
+
+======static default route => Manually configuration
+R1:
+ip route 0.0.0.0  0.0.0.0   S0/0/0
+
+R2
+ip route 0.0.0.0  0.0.0.0   S0/0/0
+
+======= static nat if needed ============
+
+ip nat inside source static 192.168.10.254 209.165.201.5
+
+----- NAT config in R1 ---------------------------
+ip nat pool BUET-Pool 209.165.200.8 209.165.200.11  netmask 255.255.255.224
+access-list 1 permit 192.168.10.0   0.0.0.255
+access-list 1 permit 192.168.20.0   0.0.0.255
+ip nat inside source list 1 pool BUET-Pool
+
+>> if PAT, just use overload
+ip nat inside source list 1 pool BUET-Pool overload
+
+int g0/0
+ip nat inside
+int g0/1
+ip nat inside
+
+int s0/3/0
+ip nat outside
+
+================================
+100.100.100.2  Web server
+100.100.100.3  FTP server
+
+
+
+---------------------------
+ACL
+---------------------------
+
+
+Router --> per interface --> inbound, outbound (EXPLAIN) * IPv4, IPv6
+Standard ACL --> Src IP only, apply at dest
+Extended --> Destn Also, port, tc/udp, apply at source
+
+wildcard Example: 192.168.10.64 0.0.0.15 ==> 64 to 79
+
+
+Standard ACL: 1-99 -> src address, closest to the destination (no dest info so manually place at dest)
+
+============ Numbered ACL ===================
+define:
+access-list 10 permit host 192.168.10.2  ==> access-list 10 permit 192.168.10.2 0.0.0.0
+access-list 10 deny 192.168.10.0 0.0.0.255
+access-list 10 deny any (implicit/optional)
+
+apply:
+int s0/0/0
+ip access-group 10 out
+
+** no access-list 10
+** no ip access-group 10 out
+** do show access-lists
+** show run | section access-list
+
+
+============ Named ACL ==================== 
+(must menton standard/extended, since no implicit number)
+
+
+define:
+ip access-list standard permit-access
+remark ...
+permit host 192.168.10.2
+deny 192.168.10.0 0.0.0.255
+permit 192.168.20.0 0.0.0.255
+
+apply:
+int s0/0/0
+ip access-group permit-access out
+
+
+host *ip*
+same as
+*ip* 0.0.0.0
+
+
+============ Extended ACL ==================== 
+
+Extended ACL: 100-199-> src IP, dest IP, port, closest to the source
+
+
+ip access-list extended FILTER-CSE
+remark ...
+permit tcp 192.168.10.0 0.0.0.255 host 100.10.10.2 eq www
+deny tcp 192.168.10.0 0.0.0.255 host 100.10.10.3 eq ftp
+permit ip any any
+
+int g0/0
+ip access-group FILTER-CSE in
+
+ip access-list extended FILTER-ME
+permit tcp 192.168.20.0 0.0.0.255 host 100.10.10.3 eq ftp
+deny tcp 192.168.20.0 0.0.0.255 host 100.10.10.2 eq www
+permit ip any any     ## this makes sure, other things, like ping works
+
+int g0/1
+ip access-group FILTER-ME in
+
+
+****
+"any" may substitute [IP] [WILDCARD MASK]
+
+
+ftp 100.10.10.3
+web browser: 100.10.10.2
+
+** no ip access-list extended FILTER
+** show access-lists
+** show run
+** show ip int serial 0/0/0 | include access-list
+
+
+============ Command Dictionary ==================== 
+
+All show commands - in # mode
+
+sh ip int br
+
+sh vlan br
+
+sh run
+
+sh start
+
+sh ip route
+
+============ Necessary Notes ==================== 
+
+>> random notes
+
+- PRESS ctrl+shift+s at intervals often
+
+- After setting ip in a router interface, no shutdown must
+- Important port numbers
+    - 80 - HTTP
+    - 20 - FTP data
+    - 21 - FTP
+    - 23 - Telnet
+    - 25 - SMTP
+- All show commands must be in hash mode
+- subnet mask may vary according to question
+- acl must be applied to interfaces
+- wildcard mask is reverse of subnet mask
+- ACLs are order sensitive and also, have no extra ACLs
+- no shutdown
+- both side native vlan same 
+- no shutdown must be given in main interface, NOT subinterface
+- 

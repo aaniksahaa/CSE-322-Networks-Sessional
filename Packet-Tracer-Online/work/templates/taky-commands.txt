@@ -1,0 +1,344 @@
+
+
+Router
+   CPU
+   RAM  //Running -Config 
+   ROM
+   NV-RAM   // Startup- Config
+   Flash => Inter Networking OS  (IOS) 
+
+For Switch and Router
+Monitor X
+Keyboard X
+
+Solve / Use  : Putty software 
+
+Two types of Mode:
+ 1. User Mode
+ 2. Admin or Privileged Mode
+
+User to Privileged Mode : switch> enable
+Privileged Mode to User Mode : switch# disable
+
+============================
+user mode => console password
+admin mode => password
+
+ctrl+Z => # mode
+
+Device Name Configuration :
+
+ configure terminal
+ hostname Sw-1-CSE
+ 
+Configure Passwords:
+
+Password for Console :
+
+    line console 0
+    password 123
+    login
+
+Password for Switch :
+  enable secret 12
+  exit
+   
+Encrypt Passwords:
+   configure terminal
+   service password-encryption
+   exit
+
+Banner Messages:
+   configure terminal
+  banner motd #This is our packer trace online#
+
+
+To set the IP address and subnet mask:
+   
+   ipconfig /ip 192.168.1.2 255.255.255.0
+
+To set the default gateway:
+   ipconfig /gateway 192.168.1.1
+
+
+VLAN:
+  configure terminal
+  int vlan 1
+  ip address 192.168.1.20 255.255.255.0
+  no shutdown
+
+Configure Router Interface :
+   interface gigabitEthernet 0/0/0
+   description Link to LAN
+   ip address 192.168.10.1 255.255.255.0
+   ipv6 address 2001:db8:acad:10::1/64
+   no shutdown
+   exit
+
+For Connecting similar devices (PC,PC or Switch,Switch) ---> Use Copper Cross-Over 
+
+command : show vlan brief
+
+VLAN 10 ----> f0/1
+VLAN 30 ----> f0/2
+
+vlan configure:
+
+VLAN creation:
+===============
+VLAN 10
+name CSE
+VLAN 30
+name ME
+// these data stored in flash not RAM
+
+port assignment
+===============
+
+int f0/1
+switchport mode access
+switchport access vlan 10
+
+
+int f0/2
+switchport mode access
+switchport access vlan 30
+
+
+* if both side data transfer possible, then it is called Trunk Link
+
+Trunk Configuration:
+
+for same Vlan:( for both switches )
+
+int g0/1
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allowed vlan 10,30,1
+
+===================================
+Native Lan ==> advantage
+Non Native ==> No advantage
+
+VLAN tagging and untagging for Non Native Vlan
+Protocol for tagging : IEEE 802.1Q
+
+
+Inter Vlan Routing : ( there must be a router in Inter Vlan Routing) (Legacy )
+
+Config:
+ Switch config:
+   config t
+   vlan 10
+   name CSE
+   vlan 30 
+   name ME
+   interface f0/1
+   switchport access vlan 10
+   interface f0/2
+   switchport access vlan 10
+   interface f0/3
+   switchport access vlan 30
+   interface f0/4
+   switchport access vlan 30
+   end
+ Router config:
+   configure t
+    interface g0/0
+    ip address 172.17.10.1 255.255.255.0
+    no shutdown
+    interface g0/1
+    ip address 172.17.30.1  255.255.255.0
+    no shutdown
+
+Router-on-a-stick Inter VLAN Routing:
+
+
+
+Network Access Translation (NAT):
+
+  100.1.1.0 / 30
+  subnet mask : 255.255.255.252
+   Point-to-point link
+   00   ==> net
+   01
+   10
+   11   ==> broadcast
+
+R1:
+=====================
+conf t
+int f0/0
+ip address 192.168.10.1  255.255.255.0
+no shutdown
+
+int f1/0
+ip address 192.168.20.1  255.255.255.0
+no shutdown
+
+int s2/0
+ip address 100.1.1.1 255.255.255.252
+clock rate 64000
+no shutdown
+
+
+R2:
+int s2/0
+ip address 100.1.1.1 255.255.255.252
+no shutdown
+
+static default Routing => Manually configuration
+default Routing
+
+R1:
+conf t
+ip route 0.0.0.0 0.0.0.0 s2/0
+
+R2:
+conf t
+ip route 0.0.0.0 0.0.0.0 s2/0
+
+Dynamic NAT:
+
+R1:
+
+conf t
+int f0/0
+ip nat inside
+int f1/0
+ip nat inside
+
+int s2/0
+ip nat outside
+
+
+Dynamic NAT:
+CSE LAN --> NAT translation allowed
+ME LAN ---> NAT translation allowed
+ 
+ip nat pool BUET-Pool 209.165.200.8  209.165.200.11  netmask 255.255.255.224
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.20.0 0.0.0.255
+ip nat inside source list 1 pool BUET-Pool
+
+show ip nat translations
+
+
+PAT: (Port Address Translations):
+
+209.165.200.8:1400
+209.165.200.8:1401
+209.165.200.8:1402
+209.165.200.8:1403
+209.165.200.8:1404
+and so on
+
+configuration :
+
+conf t
+int f0/0
+ip nat inside
+int f1/0
+ip nat inside
+int s2/0
+ip nat outside
+ip nat pool BUET-Pool 209.165.200.8  209.165.200.11  netmask 255.255.255.224
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.20.0 0.0.0.255
+ip nat inside source list 1 pool BUET-Pool overload
+
+
+
+Access Control Lists (ACL):
+
+
+ACL rules
+=======================
+Allow FTP from 192.168.10.10
+Deny all others
+
+Allow CSE LAN to browse Web Server
+Block ME LAN to browse Web Server
+
+Router
+per interface
+G0/0 => inbound, outbound, IPv4 + IPv6 == total 4 ACL
+
+Standard ACL: 1-99 => Src Address
+placement: closed to the destination
+
+src IP
+
+access-list 10 permit 1 192.168.10.10 0.0.0.0  // match four octet
+access-list 10 permit 1 192.168.10.0 0.0.0.15  // match first 28 bits ( 10.1 - 10.15)
+access-list 10 permit 1 192.168.10.64 0.0.0.15
+// explanation :
+   for last octet  
+   0100 XXXX
+   64 to 79 = Group
+
+access-list 10 permit  192.168.10.64 0.0.0.15
+access-list 10 permit deny any ( default)
+access-list 10 deny 192.168.10.0 0.0.0.255  // deny all of 10 network except host 
+
+        host 192.168.10.10  = 192.168.10.10 0.0.0.0
+int g0/0 (interface )
+ip access-group 10 in
+
+access-list 10 remark ACE permits all host in LAN 2
+access-list 10 permit 192.168.20.0 0.0.0.255
+do show access-lists
+
+
+======Numbered standard ACL:========
+
+ip access-list 10 permit host 192.168.10.10
+ip access-list 10 deny 192.168.10.0 0.0.0.255
+ip access-list 10 permit 192.168.20.0 0.0.0.255
+
+
+===== Named ACL==============
+ip access-list standard NAME( it can be anything)
+permit host 192.168.10.10
+deny 192.168.10.0 0.0.0.255
+permit 192.168.20.0 0.0.0.255
+
+
+
+Extended ACL : 100-199
+
+Src IP, Dest IP, port
+Closed to the source
+
+ip access-list extended FTP-FILTER
+permit tcp 192.168.10.0 0.0.0.255 any eq ftp  // from telnet(192.168.10.0 0.0.0.255) to any network ( ftp file transfer is allowed)
+permit tcp 192.168.10.0 0.0.0.255 any eq ftp-data
+
+//in our case
+ip access-list extended FTP-FILTER
+permit tcp 192.168.10.0 0.0.0.255 host 100.100.100.3 eq ftp
+permit tcp 192.168.10.0 0.0.0.255  host 100.100.100.3  eq ftp-data
+explanation:
+  
+
+
+permit tcp 192.168.10.0 0.0.0.255  host 100.100.100.2  eq www
+permit tcp 192.168.20.0 0.0.0.255  host 100.100.100.2  eq www
+
+
+ip access-list extended FILTER
+permit tcp 192.168.10.10 0.0.0.0 host 100.100.100.3 eq 20
+permit tcp 192.168.10.10 0.0.0.0 host 100.100.100.3 eq 21
+
+permit tcp 192.168.10.0 0.0.0.255 host 100.100.100.2 eq 80
+deny tcp 192.168.20.0 0.0.0.255 host 100.100.100.2 eq 80
+permit ip any any
+deny ip any any
+
+int s2/0
+ip access-group FILTER out
+
+
+
+
+

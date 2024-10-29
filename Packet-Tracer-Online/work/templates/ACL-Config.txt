@@ -1,0 +1,62 @@
+ACL rules
+=========
+Allow FTP from 192.168.10.10
+Deny all others
+
+Allow CSE LAN to browse Web Server
+Block ME LAN  to browse Web server
+
+Router ACL
+Per interface, say G0/0  => inbound, outbound,  IPv4+IPv6 = 4 ACLs possible
+
+Standard ACL:  1-99  => Src Address
+Placement:  closed to the destination
+
+=========== Numbered ACL ===============
+ip access-list 10  permit host 192.168.10.10   
+ip access-list 10  deny 192.168.10.0  0.0.0.255
+ip access-list 10  permit 192.168.20.0  0.0.0.255
+
+int s0/0/0
+ip access-group 10 out
+
+==> delete numbered ACL
+**no access-list 10
+
+======== NAMED ACL ===============
+ip access-list standard Permit-Access
+permit host 192.168.10.10
+deny 192.168.10.0  0.0.0.255
+permit 192.168.20.0  0.0.0.255
+
+int s0/0/0
+ip access-group Permit-Access out
+
+==> delete standard named ACL
+**no ip access-list standard Permit-Access
+
+===================================
+show access-lists
+========================
+Extended ACL: 100-199
+Src IP, Dest IP, Port;  Apply ACL closest to the source  
+=================================================================
+ip access-list extended FILTER 
+permit tcp 192.168.10.10 0.0.0.0 host 100.100.100.3 eq 20 
+permit tcp 192.168.10.10 0.0.0.0 host 100.100.100.3 eq 21
+
+deny tcp 192.168.10.0 0.0.0.0 host 100.100.100.3 eq 20 
+deny tcp 192.168.10.0 0.0.0.0 host 100.100.100.3 eq 21
+deny tcp 192.168.20.0 0.0.0.0 host 100.100.100.3 eq 20 
+deny tcp 192.168.20.0 0.0.0.0 host 100.100.100.3 eq 21
+
+permit tcp 192.168.10.0 0.0.0.255 host 100.100.100.2 eq 80
+deny tcp   192.168.20.0 0.0.0.255 host 100.100.100.2 eq 80
+permit ip any any
+
+
+int s0/0/0
+ip access-group FILTER out
+
+==> delete extended named ACL
+**no ip access-list extended FILTER 
