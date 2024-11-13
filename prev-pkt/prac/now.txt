@@ -1,0 +1,108 @@
+
+
+vlan 10
+name CSE
+vlan 15
+name EEE
+vlan 20
+name BME
+
+vlan 11
+name Management
+
+
+int f0/5
+switchport access vlan 10
+int f0/6
+switchport access vlan 15
+int f0/7
+switchport access vlan 20
+
+
+int f0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20
+
+
+
+R1
+
+int s0/0/0
+clock rate 64000
+ip address 100.2.2.1 255.255.255.252
+no shutdown
+
+int g0/0.10
+encapsulation dot1Q 10
+ip address 192.168.10.1 255.255.255.0
+
+int g0/0.15
+encapsulation dot1Q 15
+ip address 192.168.15.1 255.255.255.0
+
+int g0/0.20
+encapsulation dot1Q 20
+ip address 192.168.20.1 255.255.255.0
+
+int g0/0.11
+encapsulation dot1Q 11
+ip address 192.168.11.1 255.255.255.0
+*
+int g0/0
+// ip address 192.168.10.1 255.255.255.0
+no shutdown
+*
+
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+
+R2
+
+int s0/0/0
+ip address 100.2.2.2 255.255.255.252
+no shutdown
+
+int g0/0
+ip address 100.5.5.1 255.255.255.0
+no shutdown
+
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+
+============ ACL ==============
+
+no access-list 101
+access-list 101 deny tcp 192.168.10.0 0.0.0.255 host 100.5.5.10 eq www
+access-list 101 permit tcp 192.168.10.0 0.0.0.255 host 100.5.5.20 eq ftp
+access-list 101 permit tcp 192.168.15.0 0.0.0.255 host 100.5.5.10 eq www
+access-list 101 permit tcp  192.168.15.0 0.0.0.255 host 100.5.5.20 eq ftp
+access-list 101 permit tcp  192.168.20.0 0.0.0.255 host 100.5.5.10 eq www
+access-list 101 deny tcp  192.168.20.0 0.0.0.255 host 100.5.5.20 eq ftp
+access-list 101 permit ip any any
+
+*
+int s0/0/0
+ip access-group 101 out
+
+*
+int g0/0
+ip access-group 101 in
+int g0/0.15
+ip access-group 101 in
+int g0/0.25
+ip access-group 101 in
+int g0/0.35
+ip access-group 101 in
+
+
+
+int g0/0.10
+ip access-group 101 in
+int g0/0.15
+ip access-group 101 in
+int g0/0.20
+ip access-group 101 in
+
+
+
+

@@ -15,6 +15,13 @@ end devices
 	- ip
 	- subnet mask
 	- default gateway (the point where this network is conn to a router or multilayer switch)
+vlan
+	- create
+	- access
+	- trunk
+acl
+nat
+password, banner
 
 ---------------
 Basic Commands
@@ -475,6 +482,14 @@ login local
 transport input telnet
 access-class ADMIN-HOST in
 end
+
+
+============ Workflow ==================== 
+
+end devices
+	- ip
+	- subnet mask
+	- default gateway
 
 
 ============ Command Dictionary ==================== 
