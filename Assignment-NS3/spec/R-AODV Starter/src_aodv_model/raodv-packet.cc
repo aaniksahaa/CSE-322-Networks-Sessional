@@ -266,6 +266,9 @@ RreqHeader::operator==(RreqHeader const &o) const {
 }
 
 
+// this is the new header 
+// it does not have the originSeqNo
+
 //-----------------------------------------------------------------------------
 // RevREQ
 //-----------------------------------------------------------------------------
