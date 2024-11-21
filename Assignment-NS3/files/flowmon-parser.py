@@ -48,4 +48,4 @@ def parse_flowmon(file_path):
     print(f"Packet Delivery Ratio: {packet_delivery_ratio:.6f}")
 
 # Example usage
-parse_flowmon("./results/aodv-analysis_nodeCount-20_packetsPerSecond-100_nodeSpeed-5.flowmon")
+parse_flowmon("./results/task-1/aodv-analysis_nodeCount-20_packetsPerSecond-400_nodeSpeed-15.flowmon")
