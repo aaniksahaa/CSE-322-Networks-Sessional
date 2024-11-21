@@ -46,8 +46,8 @@ def analyze_flowmon(file_path):
     # in MBps
     network_throughput = ((total_rx_bytes * 8)/(1024*1024)) / SIMULATION_TIME
     avg_end_to_end_delay = (total_delay_sum / total_rx_packets) / 1e9 if total_rx_packets > 0 else 0
-    packet_drop_ratio = (total_lost_packets / total_tx_packets) if total_tx_packets > 0 else 0
-    packet_delivery_ratio = (total_rx_packets / total_tx_packets) if total_tx_packets > 0 else 0
+    packet_drop_ratio = 100*(total_lost_packets / total_tx_packets) if total_tx_packets > 0 else 0
+    packet_delivery_ratio = 100*(total_rx_packets / total_tx_packets) if total_tx_packets > 0 else 0
 
     return {
         'network_throughput': network_throughput,
