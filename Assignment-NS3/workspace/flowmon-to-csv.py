@@ -4,7 +4,7 @@ import glob
 import csv
 import re
 
-SIMULATION_TIME = 50 # in seconds
+from util import * 
 
 def parse_filename(filename):
     # Extract parameters from filename using regex
@@ -57,16 +57,15 @@ def analyze_flowmon(file_path):
     }
 
 def main():
-    TASK = 1
     # Find all flowmon files in the results/task-1 directory
-    flowmon_files = glob.glob(f'./results/task-{TASK}/*.flowmon')
+    flowmon_files = glob.glob(f'{RESULT_OUTPUTS_DIR}/*.flowmon')
     
     # Prepare CSV output
     csv_headers = ['nodeCount', 'packetsPerSecond', 'nodeSpeed', 
                   'network_throughput', 'avg_end_to_end_delay', 
                   'packet_drop_ratio', 'packet_delivery_ratio']
     
-    with open('flowmon_analysis.csv', 'w', newline='') as csvfile:
+    with open(f'{RESULT_SUMMARY_DIR}/flowmon_analysis.csv', 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
         writer.writeheader()
         
