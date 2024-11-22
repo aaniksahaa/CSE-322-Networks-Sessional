@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# copy the whole aodv folder here
+# then rename references
+# then copy the new raodv folder back to ns3-dev/src
+
 # Function to preserve capitalization while replacing, with special cases
 replace_with_case() {
     local search=$1
@@ -44,3 +48,6 @@ find "$AODV_DIR" -depth -name "*[aA][oO][dD][vV]*" | while read item; do
     new_name=$(replace_with_case "aodv" "raodv" "$old_name")
     mv "$item" "$dir/$new_name"
 done
+
+cp ../raodv-starter/src_aodv_helper/* ./raodv/helper
+cp ../raodv-starter/src_aodv_model/* ./raodv/model
