@@ -1,0 +1,23 @@
+So as a summary, 
+
+We will need to make the following important changes:
+
+- Previously we called the SendReply function when the intended destination received the RREQ packet inside the RecvRequest() method. But now we will need to write a new function named SendRevRequest(), that will broadcast a packet with REV_RREQ type header. This broadcast will be much like the broadcast we do in SendRequest() currently. But there is some difference between the two headers. We need to handle them. Like the REV_RREQ header does not have the originSeqNo
+
+- Also, we will need a new function RecvRevRequest() instead of RecvReply(). This function will kinda be a mixture of RecvReply() and RecvRequest(). It will be responsible for re-braodcasting the REV_RREQ headed packet if it not the origin of the first advertised route. Just like it is done in RecvRequest() method. And, if it is the origin node, then voila, we have got it, update rt entry and sendPacketsFromQueue. 
+
+- But just as RREQ in AODV, we also need to handle duplicate RevRequest receiving by intermediate node with caching just as before. So we will need new caching array/ds for tracking ReqReqs too.
+
+- And when the origin itself receives duplicates, for the first REV_RREQ received, we update rt entry and sendPacketsFromQueue. For the subsequent ones, we will also have routes actually but they are alternative routes. We store them separately and use later when the previous rt entries invalidate.
+
+for your help, here are some other texts from the raodv paper
+
+Route Discovery in R-AODV Since R-AODV is reactive routing protocol, no permanent routes are stored in nodes. The source node initiates route discovery procedure by broadcasting. The RREQ message contains following information (Figure 2): message type, source address, destination address, broadcast ID, hop count, source sequence number, destination sequence number, request time (timestamp).
+
+Whenever the source node issues a new RREQ, the broadcast ID is incremented by one. Thus, the source and destination addresses, together with the broadcast ID, uniquely identify this RREQ packet [1, 9]. The source node broadcasts the RREQ to all nodes within its transmission range. These neighboring nodes will then pass on the RREQ to other nodes in the same manner. As the RREQ is broadcasted in the whole network, some nodes may receive several copies of the same RREQ. When an inter mediate node receives a RREQ, the node checks if already received a RREQ with the same broadcast id and source address. The node cashes broadcast id and source ad dress for first time and drops redundant RREQ messages. The procedure is the same with the RREQ of AODV. When the destination node receives first route request message, it generates so called reverse request (R-RREQ) message and broadcasts it to neighbor nodes within transmission range like the RREQ of source node does. R-RREQ message (Figure 3) contains following information: reply source id, reply destination id, reply broadcast id, hop count, destination sequence number, reply time (timestamp). When broadcasted R-RREQ message arrives to intermediate node, it will check for redundancy. If it already received the same message, the message is dropped, other wise forwards to next nodes
+
+Furthermore, node stores or updates following information of routing table: Destination Node Address, Source Node Address, Hops up to destination, Destination Sequence Number, Route expiration time, and next hop to destination node. And whenever the original source node receives first R-RREQ message it starts packet transmission, and late arrived R-RREQs are saved for future use. The alternative paths can be used when the primary path fails communications. 
+3 2 1 
+Let’s see the same case of AODV, we have mentioned above, in figure 4. In R AODV, destination does not unicast reply along pre-decided shortest reverse path D 4 5 6 S. Rather, it floods R-RREQ to find source node S. And forwarding path to destination is built through this R-RREQ. Following paths might be built: S D, S 11 10 9 8 7 D, and etc. Node S can choose best one of these paths and start forwarding data packet. So RREP delivery fail problem on AODV does not occur in this case, even though node 1 moves from transmission range.
+
+Now provide the new codes to be added to the code to complete a Raodv implementation correctly with proper thinking.
