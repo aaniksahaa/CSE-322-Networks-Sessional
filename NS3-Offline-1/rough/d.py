@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from util import *
 
+default_values = {
+    'nodeCount': 20,
+    'packetsPerSecond': 100,
+    'nodeSpeed': 5,
+}
+
 def create_performance_plots(csv_file, output_dir, protocolNames):
     df = pd.read_csv(csv_file)
     df = df[df['protocolName'].isin(protocolNames)]
@@ -16,8 +22,13 @@ def create_performance_plots(csv_file, output_dir, protocolNames):
     }
 
     for param in input_params:
+        default_suffixes = []
+        for p in input_params:
+            if(p != param):
+                default_suffixes.append(f"{p} = {default_values[p]}")
+        suff = ", ".join(default_suffixes)
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-        fig.suptitle(f'Network Performance Metrics vs {param} ({", ".join(protocolNames)})', fontsize=16, y=1.02)
+        fig.suptitle(f'Network Performance Metrics vs {param} ({suff}) - {", ".join(protocolNames)}', fontsize=16, y=1.02)
         axes = axes.flatten()
 
         for idx, output_param in enumerate(output_params):
@@ -57,7 +68,7 @@ def create_performance_plots(csv_file, output_dir, protocolNames):
                                fontsize=8)
 
         plt.tight_layout()
-        plt.savefig(f'{output_dir}/performance_vs_{param}_{"_".join(protocolNames).lower()}.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{output_dir}/performance_vs_{param}_{"_".join(protocolNames).lower()}.png', dpi=100, bbox_inches='tight')
         plt.close()
 
 if __name__ == "__main__":
