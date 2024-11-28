@@ -1,0 +1,41 @@
+Starting simulations at Thu Nov 28 11:06:55 +06 2024
+=== Running Node Count Experiments ===
+
+=== Run nodeCount_20 started at Thu Nov 28 11:06:55 +06 2024 ===
+=== Run nodeCount_20 completed at Thu Nov 28 11:07:14 +06 2024 ===
+
+=== Run nodeCount_40 started at Thu Nov 28 11:07:15 +06 2024 ===
+=== Run nodeCount_40 completed at Thu Nov 28 11:07:48 +06 2024 ===
+
+=== Run nodeCount_70 started at Thu Nov 28 11:07:49 +06 2024 ===
+=== Run nodeCount_70 completed at Thu Nov 28 11:09:05 +06 2024 ===
+
+=== Run nodeCount_100 started at Thu Nov 28 11:09:06 +06 2024 ===
+=== Run nodeCount_100 completed at Thu Nov 28 11:12:21 +06 2024 ===
+=== Running Packets Per Second Experiments ===
+
+=== Run packetsPerSecond_100 started at Thu Nov 28 11:12:22 +06 2024 ===
+=== Run packetsPerSecond_100 completed at Thu Nov 28 11:13:06 +06 2024 ===
+
+=== Run packetsPerSecond_200 started at Thu Nov 28 11:13:07 +06 2024 ===
+=== Run packetsPerSecond_200 completed at Thu Nov 28 11:13:52 +06 2024 ===
+
+=== Run packetsPerSecond_300 started at Thu Nov 28 11:13:53 +06 2024 ===
+=== Run packetsPerSecond_300 completed at Thu Nov 28 11:14:47 +06 2024 ===
+
+=== Run packetsPerSecond_400 started at Thu Nov 28 11:14:48 +06 2024 ===
+=== Run packetsPerSecond_400 completed at Thu Nov 28 11:15:52 +06 2024 ===
+=== Running Node Speed Experiments ===
+
+=== Run nodeSpeed_5 started at Thu Nov 28 11:15:53 +06 2024 ===
+=== Run nodeSpeed_5 completed at Thu Nov 28 11:16:14 +06 2024 ===
+
+=== Run nodeSpeed_10 started at Thu Nov 28 11:16:15 +06 2024 ===
+=== Run nodeSpeed_10 completed at Thu Nov 28 11:16:36 +06 2024 ===
+
+=== Run nodeSpeed_15 started at Thu Nov 28 11:16:37 +06 2024 ===
+=== Run nodeSpeed_15 completed at Thu Nov 28 11:16:57 +06 2024 ===
+
+=== Run nodeSpeed_20 started at Thu Nov 28 11:16:58 +06 2024 ===
+=== Run nodeSpeed_20 completed at Thu Nov 28 11:17:20 +06 2024 ===
+All simulations completed at Thu Nov 28 11:17:21 +06 2024
