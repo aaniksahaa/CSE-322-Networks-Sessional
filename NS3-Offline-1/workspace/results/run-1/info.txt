@@ -1,0 +1,2 @@
+- all 64 runs
+- drop ratios too big in number

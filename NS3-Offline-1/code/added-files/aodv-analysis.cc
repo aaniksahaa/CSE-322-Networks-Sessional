@@ -54,6 +54,7 @@
  */
 
 #include "ns3/aodv-module.h"
+#include "ns3/raodv-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/dsdv-module.h"
@@ -97,6 +98,10 @@ class RoutingExperiment
   private:
     // parameters
 
+    std::string outputNamePrefix;
+
+    std::string protocolName;                    //!< Protocol name.
+
     // Number of nodes
     int nodeCount;
 
@@ -105,6 +110,9 @@ class RoutingExperiment
 
     // speed of nodes
     int nodeSpeed;
+
+    // the time through which flows run
+    double flowRunningTime;
 
     /**
      * Setup the receiving socket in a Sink Node.
@@ -131,24 +139,24 @@ class RoutingExperiment
     uint32_t packetsTransmitted{0}; //!< Total received packets.
     uint32_t packetsReceived{0}; //!< Total received packets.
 
-    // for now, keep a generic, change when cmd args are parsed
-    std::string tr_name{"aodv-analysis"};
-    std::string m_CSVfileName{"aodv-analysis.csv"}; //!< CSV filename.
-
-    int m_nSinks{10};                                      //!< Number of sink nodes.
-    std::string m_protocolName{"AODV"};                    //!< Protocol name.
+    // these are not used
     double m_txp{7.5};                                     //!< Tx power.
+    int m_nSinks{10};                                      //!< Number of sink nodes.
 
     bool pcap{false};
     bool printRoutes{false};
-    bool m_traceMobility{true};                           //!< Enable mobility tracing.
+    bool m_traceMobility{false};                           //!< Enable mobility tracing.
     bool m_flowMonitor{true};                             //!< Enable FlowMonitor.
 };
 
+// default parameters
 RoutingExperiment::RoutingExperiment():
+    outputNamePrefix("routing-protocol-analysis"),
+    protocolName("AODV"),
     nodeCount(20),
     packetsPerSecond(100),
-    nodeSpeed(5)
+    nodeSpeed(5),
+    flowRunningTime(20.0)
 {
     
 }
@@ -191,7 +199,7 @@ RoutingExperiment::CheckThroughput()
     double kbs = (bytesTotal * 8.0) / 1000;
     bytesTotal = 0;
 
-    std::ofstream out(m_CSVfileName, std::ios::app);
+    std::ofstream out(outputNamePrefix + ".csv", std::ios::app);
 
     out << (Simulator::Now()).GetSeconds() << "," << kbs << "," << packetsReceived << ","
         << packetsTransmitted << " " << std::endl;
@@ -225,26 +233,56 @@ void
 RoutingExperiment::CommandSetup(int argc, char** argv)
 {
     CommandLine cmd(__FILE__);
-    // cmd.AddValue("CSVfileName", "The name of the CSV output file name", m_CSVfileName);
+
+    std::string comment;
+    
+    cmd.AddValue("comment", "Suitable comment as filename prefix for late parsing", comment);
+    // cmd.AddValue("outputNamePrefix", "Prefix for output filenames", outputNamePrefix);
+    cmd.AddValue("protocolName", "Routing protocol name(AODV or RAODV)", protocolName);
     cmd.AddValue("nodeCount", "The number of nodes", nodeCount);
     cmd.AddValue("packetsPerSecond", "The number of packets per second", packetsPerSecond);
     cmd.AddValue("nodeSpeed", "The speed of the mobile nodes", nodeSpeed);
+    cmd.AddValue("flowRunningTime", "The time through which flows run", flowRunningTime);
+
     cmd.Parse(argc, argv);
 
+    std::ostringstream oss;
+
+    oss<<"\nRunning Parameters:\n";
+    oss<<"comment = "<<comment<<"\n";
+    oss<<"protocolName = "<<protocolName<<"\n";
+    oss<<"nodeCount = "<<nodeCount<<"\n";
+    oss<<"packetsPerSecond = "<<packetsPerSecond<<"\n";
+    oss<<"nodeSpeed = "<<nodeSpeed<<"\n";
+    oss<<"flowRunningTime = "<<flowRunningTime<<"\n";
+    oss<<"\n";
+
+    NS_LOG_UNCOND(oss.str());
+
+    std::vector<std::string> allowedProtocols{"AODV", "RAODV"};
+
+    if (std::find(std::begin(allowedProtocols), std::end(allowedProtocols), protocolName) ==
+        std::end(allowedProtocols))
+    {
+        NS_FATAL_ERROR("No such protocol:" << protocolName);
+    }
+
     std::stringstream ss;
-    ss << nodeCount;
-    std::string sNodeCount = ss.str();
+    ss << "_protocolName-" << protocolName << "_nodeCount-" << nodeCount << "_packetsPerSecond-" << packetsPerSecond << "_nodeSpeed-" << nodeSpeed << "_flowRunningTime-" << flowRunningTime << "_comment-";
+    std::string params = ss.str();
 
-    std::stringstream ss1;
-    ss1 << packetsPerSecond;
-    std::string sPacketsPerSecond = ss1.str();
+    // std::stringstream ss1;
+    // ss1 << packetsPerSecond;
+    // std::string sPacketsPerSecond = ss1.str();
 
-    std::stringstream ss2;
-    ss2 << nodeSpeed;
-    std::string sNodeSpeed = ss2.str();
+    // std::stringstream ss2;
+    // ss2 << nodeSpeed;
+    // std::string sNodeSpeed = ss2.str();
 
-    tr_name = "./scratch/results/" + tr_name + "_nodeCount-" + sNodeCount + "_packetsPerSecond-" + sPacketsPerSecond + "_nodeSpeed-" + sNodeSpeed;
-    m_CSVfileName = tr_name + ".csv";
+    std::string dir{"./scratch/results/"};
+    std::string basename{"experiment"};
+    outputNamePrefix = dir + basename + params + comment;
+    // outputNamePrefix = dir + outputNamePrefix + "_nodeCount-" + sNodeCount + "_packetsPerSecond-" + sPacketsPerSecond + "_nodeSpeed-" + sNodeSpeed;
 }
 
 int
@@ -263,16 +301,16 @@ RoutingExperiment::Run()
     Packet::EnablePrinting();
 
     // blank out the last output file and write the column headers
-    std::ofstream out(m_CSVfileName);
+    std::ofstream out(outputNamePrefix + ".csv");
     out << "SimulationSecond,"
         << "ReceivedKb,"
         << "PacketsReceived,"
         << "PacketsTransmitted," << std::endl;
     out.close();
 
-    double TotalTime = 150.0;
+    double TotalTime = 100.0 + flowRunningTime;
 
-    int packetSize = 1024; 
+    int packetSize = 64; 
 
     int rateValue = packetSize*8*packetsPerSecond;
 
@@ -345,14 +383,29 @@ RoutingExperiment::Run()
     mobilityAdhoc.Install(adhocNodes);
     streamIndex += mobilityAdhoc.AssignStreams(adhocNodes, streamIndex);
 
+
     AodvHelper aodv;
+    RAodvHelper raodv;
+
     Ipv4ListRoutingHelper list;
     InternetStackHelper internet;
 
-    list.Add(aodv, 100);
-    internet.SetRoutingHelper(list);
-    internet.Install(adhocNodes);
-
+    if (protocolName == "AODV")
+    {
+        list.Add(aodv, 100);
+        internet.SetRoutingHelper(list);
+        internet.Install(adhocNodes);
+    }
+    else if (protocolName == "RAODV")
+    {
+        list.Add(raodv, 100);
+        internet.SetRoutingHelper(list);
+        internet.Install(adhocNodes);
+    }
+    else
+    {
+        NS_FATAL_ERROR("No such protocol:" << protocolName);
+    }
 
     NS_LOG_INFO("assigning ip address");
 
@@ -367,17 +420,20 @@ RoutingExperiment::Run()
 
     for (int i = 0; i < nodeCount/2; i++)
     {
-        Ptr<Socket> sink = SetupPacketReceive(adhocInterfaces.GetAddress(i), adhocNodes.Get(i));
+        int flowSrc = i + (nodeCount/2);
+        int flowDst = i;
 
-        AddressValue remoteAddress(InetSocketAddress(adhocInterfaces.GetAddress(i), port));
+        Ptr<Socket> sink = SetupPacketReceive(adhocInterfaces.GetAddress(flowDst), adhocNodes.Get(flowDst));
+
+        AddressValue remoteAddress(InetSocketAddress(adhocInterfaces.GetAddress(flowDst), port));
         onoff1.SetAttribute("Remote", remoteAddress);
 
-        // Ptr<Socket> sourceSocket = Socket::CreateSocket(adhocNodes.Get(nodeCount - 1 - i), UdpSocketFactory::GetTypeId());
+        // Ptr<Socket> sourceSocket = Socket::CreateSocket(adhocNodes.Get(flowSrc), UdpSocketFactory::GetTypeId());
         // sourceSocket->SetSendCallback(MakeCallback(&RoutingExperiment::TransmitPacketCallback, this));
 
 
         Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable>();
-        ApplicationContainer temp = onoff1.Install(adhocNodes.Get(nodeCount-1-i));
+        ApplicationContainer temp = onoff1.Install(adhocNodes.Get(flowSrc));
 
         // Attach a trace callback to monitor transmitted packets
         Ptr<OnOffApplication> onoffApp = StaticCast<OnOffApplication>(temp.Get(0));
@@ -404,14 +460,14 @@ RoutingExperiment::Run()
     std::string sRate = ss4.str();
 
     // NS_LOG_INFO("Configure Tracing.");
-    // tr_name = tr_name + "_" + m_protocolName +"_" + nodes + "nodes_" + sNodeSpeed + "speed_" +
+    // outputNamePrefix = outputNamePrefix + "_" + protocolName +"_" + nodes + "nodes_" + sNodeSpeed + "speed_" +
     // sNodePause + "pause_" + sRate + "rate";
 
     // AsciiTraceHelper ascii;
-    // Ptr<OutputStreamWrapper> osw = ascii.CreateFileStream(tr_name + ".tr");
+    // Ptr<OutputStreamWrapper> osw = ascii.CreateFileStream(outputNamePrefix + ".tr");
     // wifiPhy.EnableAsciiAll(osw);
-    AsciiTraceHelper ascii;
-    MobilityHelper::EnableAsciiAll(ascii.CreateFileStream(tr_name + ".mob"));
+    // AsciiTraceHelper ascii;
+    // MobilityHelper::EnableAsciiAll(ascii.CreateFileStream(outputNamePrefix + ".mob"));
 
     FlowMonitorHelper flowmonHelper;
     Ptr<FlowMonitor> flowmon;
@@ -429,7 +485,7 @@ RoutingExperiment::Run()
 
     if (m_flowMonitor)
     {
-        flowmon->SerializeToXmlFile(tr_name + ".flowmon", false, false);
+        flowmon->SerializeToXmlFile(outputNamePrefix + ".flowmon", false, false);
     }
 
     Simulator::Destroy();
