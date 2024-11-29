@@ -102,6 +102,9 @@ class RoutingExperiment
 
     std::string protocolName;                    //!< Protocol name.
 
+    // for configuring which variant of RAODV are we running...
+    int variant;
+
     // Number of nodes
     int nodeCount;
 
@@ -153,6 +156,7 @@ class RoutingExperiment
 RoutingExperiment::RoutingExperiment():
     outputNamePrefix("routing-protocol-analysis"),
     protocolName("AODV"),
+    variant(0),
     nodeCount(20),
     packetsPerSecond(100),
     nodeSpeed(5),
@@ -237,8 +241,8 @@ RoutingExperiment::CommandSetup(int argc, char** argv)
     std::string comment;
     
     cmd.AddValue("comment", "Suitable comment as filename prefix for late parsing", comment);
-    // cmd.AddValue("outputNamePrefix", "Prefix for output filenames", outputNamePrefix);
     cmd.AddValue("protocolName", "Routing protocol name(AODV or RAODV)", protocolName);
+    cmd.AddValue("variant", "variant number in case of RAODV, ignored for AODV", variant);
     cmd.AddValue("nodeCount", "The number of nodes", nodeCount);
     cmd.AddValue("packetsPerSecond", "The number of packets per second", packetsPerSecond);
     cmd.AddValue("nodeSpeed", "The speed of the mobile nodes", nodeSpeed);
@@ -251,6 +255,7 @@ RoutingExperiment::CommandSetup(int argc, char** argv)
     oss<<"\nRunning Parameters:\n";
     oss<<"comment = "<<comment<<"\n";
     oss<<"protocolName = "<<protocolName<<"\n";
+    oss<<"variant = "<<variant<<"\n";
     oss<<"nodeCount = "<<nodeCount<<"\n";
     oss<<"packetsPerSecond = "<<packetsPerSecond<<"\n";
     oss<<"nodeSpeed = "<<nodeSpeed<<"\n";
@@ -268,7 +273,7 @@ RoutingExperiment::CommandSetup(int argc, char** argv)
     }
 
     std::stringstream ss;
-    ss << "_protocolName-" << protocolName << "_nodeCount-" << nodeCount << "_packetsPerSecond-" << packetsPerSecond << "_nodeSpeed-" << nodeSpeed << "_flowRunningTime-" << flowRunningTime << "_comment-";
+    ss << "_protocolName-" << protocolName << "_variant-" << variant << "_nodeCount-" << nodeCount << "_packetsPerSecond-" << packetsPerSecond << "_nodeSpeed-" << nodeSpeed << "_flowRunningTime-" << flowRunningTime << "_comment-";
     std::string params = ss.str();
 
     // std::stringstream ss1;
@@ -398,6 +403,7 @@ RoutingExperiment::Run()
     }
     else if (protocolName == "RAODV")
     {
+        raodv.Set("Variant", UintegerValue(variant));
         list.Add(raodv, 100);
         internet.SetRoutingHelper(list);
         internet.Install(adhocNodes);
@@ -418,9 +424,9 @@ RoutingExperiment::Run()
     onoff1.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1.0]"));
     onoff1.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.0]"));
 
-    for (int i = 0; i < nodeCount/2; i++)
+    for (int i = 0; i < nodeCount; i++)
     {
-        int flowSrc = i + (nodeCount/2);
+        int flowSrc = nodeCount - 1 - i;
         int flowDst = i;
 
         Ptr<Socket> sink = SetupPacketReceive(adhocInterfaces.GetAddress(flowDst), adhocNodes.Get(flowDst));

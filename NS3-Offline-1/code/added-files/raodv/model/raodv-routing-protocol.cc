@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Based on
- *      NS-2 RAODV model developed by the CMU/MONARCH group and optimized and
+ *      NS-2 AODV model developed by the CMU/MONARCH group and optimized and
  *      tuned by Samir Das and Mahesh Marina, University of Cincinnati;
  *
- *      RAODV-UU implementation by Erik Nordström of Uppsala University
+ *      AODV-UU implementation by Erik Nordström of Uppsala University
  *      https://web.archive.org/web/20100527072022/http://core.it.uu.se/core/index.php/RAODV-UU
  *
  * Authors: Elena Buchatskaia <borovkovaes@iitp.ru>
  *          Pavel Boyko <boyko@iitp.ru>
+ * 
+ *          Anik Saha <aaniksahaa.2001@gmail.com>
  */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (m_ipv4)                                                                                    \
@@ -21,16 +23,27 @@
 
 
 
-#define ANSI_RED     "\x1b[31m"
-#define ANSI_GREEN   "\x1b[32m"
-#define ANSI_YELLOW  "\x1b[33m"
-#define ANSI_BLUE    "\x1b[34m"
+#define ANSI_RED       "\x1b[31m"
+#define ANSI_GREEN     "\x1b[32m"
+#define ANSI_YELLOW    "\x1b[33m"
+#define ANSI_BLUE      "\x1b[34m"
+#define ANSI_MAGENTA   "\x1b[35m"
+#define ANSI_CYAN      "\x1b[36m"
+#define ANSI_WHITE     "\x1b[37m"
+#define ANSI_BLACK     "\x1b[30m"
 #define ANSI_RESET   "\x1b[0m"
 
-#define LOG_INFO_RED(x) NS_LOG_INFO(ANSI_RED << x << ANSI_RESET)
-#define LOG_INFO_GREEN(x) NS_LOG_INFO(ANSI_GREEN << x << ANSI_RESET)
-#define LOG_INFO_YELLOW(x) NS_LOG_INFO(ANSI_YELLOW << x << ANSI_RESET)
-#define LOG_INFO_BLUE(x) NS_LOG_INFO(ANSI_BLUE << x << ANSI_RESET)
+// #define LOG_UNCOND_RED(x) NS_LOG_INFO(ANSI_RED << x << ANSI_RESET)
+// #define LOG_UNCOND_GREEN(x) NS_LOG_INFO(ANSI_GREEN << x << ANSI_RESET)
+// #define LOG_UNCOND_YELLOW(x) NS_LOG_INFO(ANSI_YELLOW << x << ANSI_RESET)
+// #define LOG_UNCOND_BLUE(x) NS_LOG_INFO(ANSI_BLUE << x << ANSI_RESET)
+
+#define LOG_UNCOND_RED(x) NS_LOG_UNCOND(ANSI_RED << x << ANSI_RESET)
+#define LOG_UNCOND_GREEN(x) NS_LOG_UNCOND(ANSI_GREEN << x << ANSI_RESET)
+#define LOG_UNCOND_YELLOW(x) NS_LOG_UNCOND(ANSI_YELLOW << x << ANSI_RESET)
+#define LOG_UNCOND_BLUE(x) NS_LOG_UNCOND(ANSI_BLUE << x << ANSI_RESET)
+#define LOG_UNCOND_MAGENTA(x) NS_LOG_UNCOND(ANSI_MAGENTA << x << ANSI_RESET)
+#define LOG_UNCOND_CYAN(x) NS_LOG_UNCOND(ANSI_CYAN << x << ANSI_RESET)
 
 
 #include "raodv-routing-protocol.h"
@@ -149,7 +162,8 @@ NS_OBJECT_ENSURE_REGISTERED(DeferredRouteOutputTag);
 
 //-----------------------------------------------------------------------------
 RoutingProtocol::RoutingProtocol()
-    : m_rreqRetries(2),
+    : m_variant(0),
+      m_rreqRetries(2),
       m_ttlStart(1),
       m_ttlIncrement(2),
       m_ttlThreshold(7),
@@ -169,20 +183,20 @@ RoutingProtocol::RoutingProtocol()
       m_blackListTimeout(Time(m_rreqRetries * m_netTraversalTime)),
       m_maxQueueLen(64),
       m_maxQueueTime(Seconds(30)),
-      m_destinationOnly(false),
-      m_gratuitousReply(true),
+      m_destinationOnly(true),
+      m_gratuitousReply(false),
       m_enableHello(false),
       m_routingTable(m_deletePeriod),
       m_queue(m_maxQueueLen, m_maxQueueTime),
       m_requestId(0),
 
-      // ANIK
+      // ANIK-NS3-OFFLINE-1
       m_revRequestId(0),
 
       m_seqNo(0),
       m_rreqIdCache(m_pathDiscoveryTime),
 
-      // ANIK
+      // ANIK-NS3-OFFLINE-1
       m_revRreqIdCache(m_pathDiscoveryTime),
 
       m_dpd(m_pathDiscoveryTime),
@@ -205,6 +219,12 @@ RoutingProtocol::GetTypeId()
             .SetParent<Ipv4RoutingProtocol>()
             .SetGroupName("RAodv")
             .AddConstructor<RoutingProtocol>()
+            // ANIK-NS3-OFFLINE-1
+            .AddAttribute("Variant",
+                          "Variant of the algorithm - 0 means original, 1,2 means modifications",
+                          UintegerValue(0),
+                          MakeUintegerAccessor(&RoutingProtocol::m_variant),
+                          MakeUintegerChecker<uint32_t>())
             .AddAttribute("HelloInterval",
                           "HELLO messages emission interval.",
                           TimeValue(Seconds(1)),
@@ -1298,22 +1318,26 @@ RoutingProtocol::RecvRAodv(Ptr<Socket> socket)
     // sets which function to call based on the header type
     switch (tHeader.Get())
     {
-    case AODVTYPE_RREQ: {
-        RecvRequest(packet, receiver, sender);
-        break;
-    }
-    case AODVTYPE_RREP: {
-        RecvReply(packet, receiver, sender);
-        break;
-    }
-    case AODVTYPE_RERR: {
-        RecvError(packet, sender);
-        break;
-    }
-    case AODVTYPE_RREP_ACK: {
-        RecvReplyAck(sender);
-        break;
-    }
+        case AODVTYPE_RREQ: {
+            RecvRequest(packet, receiver, sender);
+            break;
+        }
+        case AODVTYPE_RREP: {
+            RecvReply(packet, receiver, sender);
+            break;
+        }
+        case AODVTYPE_RERR: {
+            RecvError(packet, sender);
+            break;
+        }
+        case AODVTYPE_RREP_ACK: {
+            RecvReplyAck(sender);
+            break;
+        }
+        case AODVTYPE_REV_RREQ: {
+            RecvRevRequest(packet, receiver, sender);
+            break;
+        }
     }
 }
 
@@ -1427,7 +1451,33 @@ RoutingProtocol::RecvRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sr
      */
     if (m_rreqIdCache.IsDuplicate(origin, id))
     {
-        NS_LOG_DEBUG("Ignoring RREQ due to duplicate");
+        // ANIK-NS3-OFFLINE-1
+        // VARIANT 2
+        // In my proposed variant 2
+        // I intentionally receive duplicate RREQ packets at the actual destination
+        // and also send RREP messsages for them
+        // this, along with, RREP from the first time the destination receives it
+        // actually simulates multiple simulatneous unicast instead of braodcast in original RAODV
+        // Intuition: 
+        // Broadcasting seems like a from-scratch-search from the reverse direction
+        // but since we have already found the destination, maybe more than once,
+        // utilizing all those distinct unicast paths seems to be more efficient 
+        // than direct broadcasting
+        if(m_variant == 2){
+            if (IsMyOwnAddress(rreqHeader.GetDst()))
+            {
+                LOG_UNCOND_CYAN("Doing intentional Multicast");
+
+                RoutingTableEntry toOrigin;
+                m_routingTable.LookupRoute(origin, toOrigin);
+
+                LOG_UNCOND_YELLOW("Attention! Destination reached. Sending RREP message.");
+                NS_LOG_DEBUG("Send reply since I am the destination");
+                SendReply(rreqHeader, toOrigin);
+            }
+        } else{
+            NS_LOG_DEBUG("Ignoring RREQ due to duplicate");
+        }
         return;
     }
 
@@ -1518,21 +1568,61 @@ RoutingProtocol::RecvRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sr
                           << static_cast<uint32_t>(rreqHeader.GetHopCount()) << " ID "
                           << rreqHeader.GetId() << " to destination " << rreqHeader.GetDst());
 
-    //  A node generates a RREP if either:
-    //  (i)  it is itself the destination,
+    // ANIK-NS3-OFFLINE-1
+    // note that, this is place of main difference between AODV and RAODV
+    // there is room to modify what is done here
+    // A node generates a REV_RREQ (or, RREP for variants) if either:
     if (IsMyOwnAddress(rreqHeader.GetDst()))
     {
         m_routingTable.LookupRoute(origin, toOrigin);
 
-        // NS_LOG_DEBUG("Send reply since I am the destination");
-        // SendReply(rreqHeader, toOrigin);
+        // ANIK-NS3-OFFLINE-1
+        // VARIANT 1
+        // in variant 1, I send both unicast and broadcast message
+        // note that, unicast, here is not trivially included in the broadcast
+        // because, while broadcasting, we are just blindly flooding the packet,
+        // without taking help from routing table
+        // however, for the one unicast route, we already had found it as shortest path
+        // so there is some probability that this shortest path has not broken
+        // in the meantime
+        // Intuition:
+        // Fully ignoring the previously found shortest unicast path seems to be wasteful
+        // Since, we are already broadcasting, it does not take much more to also unicast 
+        // like AODV
+        // So, this variant is a plain union of AODV and RAODV
+        if(m_variant == 1){
+            LOG_UNCOND_YELLOW("Attention! Destination reached. Sending RREP message.");
+            NS_LOG_DEBUG("Send reply since I am the destination");
+            SendReply(rreqHeader, toOrigin);
 
-        // ANIK
-        NS_LOG_DEBUG("Send REV-RREQ since I am the destination");
-        SendRevRequest(rreqHeader, toOrigin);
+            LOG_UNCOND_YELLOW("Attention! Destination reached. Sending REV_RREQ message.");
+            NS_LOG_DEBUG("Send REV-RREQ since I am the destination");
+            SendRevRequest(rreqHeader, toOrigin);
+        }
+        // variant 2 is multicast
+        // so, here upon first reception
+        // it just sends RREP as it used to do in normal AODV
+        else if(m_variant == 2){
+            LOG_UNCOND_YELLOW("Attention! Destination reached. Sending RREP message.");
+            NS_LOG_DEBUG("Send reply since I am the destination");
+            SendReply(rreqHeader, toOrigin);
+        }
+        // this is the original RAODV
+        // here it sends only REV_RREQ 
+        else{
+            LOG_UNCOND_YELLOW("Attention! Destination reached. Sending REV_RREQ message.");
+            NS_LOG_DEBUG("Send REV-RREQ since I am the destination");
+            SendRevRequest(rreqHeader, toOrigin);
+        }
 
         return;
     }
+
+    /*
+     * 
+     * 
+     */
+    
     /*
      * (ii) or it has an active route to the destination, the destination sequence number in the
      * node's existing route table entry for the destination is valid and greater than or equal to
@@ -1562,12 +1652,12 @@ RoutingProtocol::RecvRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sr
              (int32_t(toDst.GetSeqNo()) - int32_t(rreqHeader.GetDstSeqno()) >= 0)) &&
             toDst.GetValidSeqNo())
         {
-            if (!rreqHeader.GetDestinationOnly() && toDst.GetFlag() == VALID)
-            {
-                m_routingTable.LookupRoute(origin, toOrigin);
-                SendReplyByIntermediateNode(toDst, toOrigin, rreqHeader.GetGratuitousRrep());
-                return;
-            }
+            // if (!rreqHeader.GetDestinationOnly() && toDst.GetFlag() == VALID)
+            // {
+            //     m_routingTable.LookupRoute(origin, toOrigin);
+            //     SendReplyByIntermediateNode(toDst, toOrigin, rreqHeader.GetGratuitousRrep());
+            //     return;
+            // }
             rreqHeader.SetDstSeqno(toDst.GetSeqNo());
             rreqHeader.SetUnknownSeqno(false);
         }
@@ -1581,6 +1671,9 @@ RoutingProtocol::RecvRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sr
         return;
     }
 
+    // please note that, while re-broadcasting, we do not create a rreqHeader again
+    // rather we send the header that is present now at this method
+    // after performing the modifications along the above lines
     for (auto j = m_socketAddresses.begin(); j != m_socketAddresses.end(); ++j)
     {
         Ptr<Socket> socket = j->first;
@@ -1648,7 +1741,18 @@ RoutingProtocol::SendReply(const RreqHeader& rreqHeader, const RoutingTableEntry
 }
 
 
-// ANIK
+// ANIK-NS3-OFFLINE-1
+// We need to send a REV_RREQ header containing packet from the destination end
+// when the RREQ packet reaches destination
+// There we write a new function for sending RevRequest just like sending Request
+// Just like SendRequest() braodcasts RREQ, this function broadcasts REV_RREQ message
+// Note that, in this function, we have two important changes
+// First, we do not introduce any rate limit
+// Rate limiting here does not really mean totally discarding the sending
+// It just means delaying
+// However, doing this retrying both at the sender and receiver end does not make sense
+// it would rather introduce further congestion
+// so we intentionally skip the rate limiting and retrying functionality
 void
 RoutingProtocol::SendRevRequest(const RreqHeader& rreqHeader, const RoutingTableEntry& toOrigin)
 {
@@ -1658,27 +1762,37 @@ RoutingProtocol::SendRevRequest(const RreqHeader& rreqHeader, const RoutingTable
      * RREQ packet is equal to that incremented value. Otherwise, the destination does not change
      * its sequence number before generating the REV_RREQ message.
      */
+    // this m_seqNo is then used as dstSeqNo
     if (!rreqHeader.GetUnknownSeqno() && (rreqHeader.GetDstSeqno() == m_seqNo + 1))
     {
         m_seqNo++;
     }
 
     // since it is a braodcast message keeping the lifetime high
-    uint16_t ttl = m_netDiameter;
+    uint32_t ttl = m_netDiameter;
 
-    // build the revRreqHeader
-
+    // building the revRreqHeader
+    // by setting appropriate fields
+    // we are not setting the hop,
+    // so, the initial hop will be 0
     RevRreqHeader revRreqHeader;
     revRreqHeader.SetDst(rreqHeader.GetDst());
     revRreqHeader.SetDstSeqno(m_seqNo);
     
-    // the following would be wrong
     // as we will now broadcast
+    // so the origin should be set dynamically
+    // based on the particular interface we will be broadcasting from
+    // so the following line is wrong
     // revRreqHeader.SetOrigin(toOrigin.GetDestination());
 
-    // since it is a braodcast message keeping the lifetime high
-    revRreqHeader.SetLifeTime(ttl);
+    // revRreqHeader.SetLifeTime(ttl);
+    revRreqHeader.SetLifeTime(m_myRouteTimeout);
 
+    // please note that, 
+    // in case of RREP message, there was no ID
+    // But here we are again broadcasting just like we did in case of 
+    // RREQ
+    // thus, in REV_RREQ, we will again need a broadcast ID 
     m_revRequestId++;
     revRreqHeader.SetId(m_revRequestId);
 
@@ -1692,16 +1806,19 @@ RoutingProtocol::SendRevRequest(const RreqHeader& rreqHeader, const RoutingTable
     }
 
     // Broadcast REV-RREQ
+    // this block is just like that in SendRequest() method
     for (auto j = m_socketAddresses.begin(); j != m_socketAddresses.end(); ++j) {
         Ptr<Socket> socket = j->first;
         Ipv4InterfaceAddress iface = j->second;
 
         // setting the origin for this interface, as we are broadcasting
-        revRreqHeader.SetOrigin(iface.GetLocal());
-        // set in cache
-        m_revRreqIdCache.IsDuplicate(iface.GetLocal(), m_revRequestId);
+        // revRreqHeader.SetOrigin(iface.GetLocal());
+        revRreqHeader.SetOrigin(rreqHeader.GetOrigin());
 
-        // build the packet
+        // just like in RREQ, we set this in our IdCcahe
+        m_revRreqIdCache.IsDuplicate(rreqHeader.GetOrigin(), m_revRequestId);
+
+        // build the packet by adding tag and header
         Ptr<Packet> packet = Create<Packet>();
         SocketIpTtlTag tag;
         tag.SetTtl(ttl);
@@ -1710,6 +1827,7 @@ RoutingProtocol::SendRevRequest(const RreqHeader& rreqHeader, const RoutingTable
         TypeHeader tHeader(AODVTYPE_REV_RREQ);
         packet->AddHeader(tHeader);
 
+        // BROADCAST
         // Send to all-hosts broadcast if on /32 addr, subnet-directed otherwise
         Ipv4Address destination;
         if (iface.GetMask() == Ipv4Mask::GetOnes())
@@ -1728,13 +1846,22 @@ RoutingProtocol::SendRevRequest(const RreqHeader& rreqHeader, const RoutingTable
                           packet,
                           destination);
     }
-    // #CONF not setting retry for now
+    // There should be no retry timer here
+    // unlike the case in SendRequest
+    // actually there it was mandatory to find a path sooner or later
+    // so we had been retrying
+    // but here, if we add a retry timer again, this will be illogical
+    // too many packets will flood the network unnecessarily
+    // so i remove the retry timer
 }
 
 
 
 
-// we will not actually need this probably
+// we will not actually need anything like this for the original RAODV probably
+// as per the paper, REV_RREQ message is only replied from the actual destination
+// not any intermediate node...
+// still keeping this method to implement hybrid variants
 void
 RoutingProtocol::SendReplyByIntermediateNode(RoutingTableEntry& toDst,
                                              RoutingTableEntry& toOrigin,
@@ -1912,6 +2039,7 @@ RoutingProtocol::RecvReply(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address send
     NS_LOG_LOGIC("receiver " << receiver << " origin " << rrepHeader.GetOrigin());
     if (IsMyOwnAddress(rrepHeader.GetOrigin()))
     {
+        LOG_UNCOND_MAGENTA("Origin received RREP packet!");
         if (toDst.GetFlag() == IN_SEARCH)
         {
             m_routingTable.Update(newEntry);
@@ -1974,10 +2102,15 @@ RoutingProtocol::RecvReply(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address send
 
 
 
-// ANIK
+// ANIK-NS3-OFFLINE-1
+// note that, in this function, we omit the precursor settings
+// beacuse we are now broadcasting, intermediate nodes do not necessarily have a route
+// to the origin
+// thus setting precursors does not make sense in this case
 void
 RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sender)
 {
+    LOG_UNCOND_GREEN("Receiving Rev Request. So RAODV is working!");
     NS_LOG_FUNCTION(this << " src " << sender);
 
     RevRreqHeader revRreqHeader;
@@ -1985,7 +2118,10 @@ RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address
 
     bool isDuplicate = false, isMeOrigin = false;
 
-    if (m_rreqIdCache.IsDuplicate(revRreqHeader.GetOrigin(), revRreqHeader.GetId()))
+    // check two things, whether this is a duplicate braodcast REV_RREQ
+    // and whether I am the destination myself
+    // these booleans will be used later to decide what to do
+    if (m_revRreqIdCache.IsDuplicate(revRreqHeader.GetOrigin(), revRreqHeader.GetId()))
     {
         isDuplicate = true;
     }
@@ -2004,7 +2140,7 @@ RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address
     //     return; 
     // }
 
-    Ipv4Address dst = rrepHeader.GetDst();
+    Ipv4Address dst = revRreqHeader.GetDst();
 
     // Update hop count
     uint8_t hop = revRreqHeader.GetHopCount() + 1;
@@ -2047,13 +2183,6 @@ RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address
             m_routingTable.Update(newEntry);
         }
 
-        // Update existing route
-        // toDst.SetLifeTime(std::max(revRreqHeader.GetLifeTime(), toDst.GetLifeTime()));
-        // toDst.SetValidSeqNo(true);
-        // toDst.SetSeqNo(revRreqHeader.GetDstSeqno());
-        // toDst.SetHop(hop);
-        // toDst.SetNextHop(sender);
-        // m_routingTable.Update(toDst);
     } else {
         // The forward route for this destination is created if it does not already exist.
         NS_LOG_LOGIC("add new route");
@@ -2061,17 +2190,17 @@ RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address
     }
 
     // If I am the original source
-    if (IsMyOwnAddress(revRreqHeader.GetOrigin())) {
+    if (isMeOrigin) {
         // If this is first REV-RREQ received
         if (!isDuplicate) {
-            LOG_INFO_GREEN("Attention: First REV_RREQ received by origin.")
+            LOG_UNCOND_YELLOW("Attention! First REV_RREQ received by origin. Now it will send packets in Queue.");
             if (toDst.GetFlag() == IN_SEARCH && (m_addressReqTimer.find(revRreqHeader.GetOrigin()) != m_addressReqTimer.end())) {
                 m_routingTable.Update(newEntry);
                 m_addressReqTimer[dst].Cancel();
                 m_addressReqTimer.erase(dst);
             }
             m_routingTable.LookupRoute(dst, toDst);
-            SendPacketFromQueue(revRreqHeader.GetOrigin(), toOrigin.GetRoute());
+            SendPacketFromQueue(dst, toDst.GetRoute());
             return;
         } else {
             // #TODO
@@ -2082,6 +2211,9 @@ RoutingProtocol::RecvRevRequest(Ptr<Packet> p, Ipv4Address receiver, Ipv4Address
     }
 
     // Otherwise, rebroadcast REV-RREQ
+    // please note that, while re-broadcasting, we do not create a revRreqHeader again
+    // rather we send the header that is present now at this method
+    // after performing the modifications along the above lines
     for (auto j = m_socketAddresses.begin(); j != m_socketAddresses.end(); ++j) {
         Ptr<Socket> socket = j->first;
         Ipv4InterfaceAddress iface = j->second;

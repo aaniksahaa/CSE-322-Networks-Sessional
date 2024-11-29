@@ -37,4 +37,4 @@ def images_to_pdf(folder_path, output_pdf):
     c.save()
 
 # Usage
-images_to_pdf(PLOTS_DIR, 'output.pdf')
+images_to_pdf(PLOTS_DIR, 'report.pdf')
