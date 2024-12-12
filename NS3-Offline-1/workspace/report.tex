@@ -1,0 +1,112 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+\title{Performance Analysis of AODV and RAODV Routing Protocols}
+\author{Anik Saha}
+\maketitle
+\newpage
+\section{Introduction}
+This report presents a comprehensive analysis of the performance metrics for AODV (Ad hoc On-demand Distance Vector) and RAODV (Reliable AODV) routing protocols. The analysis includes comparisons of various performance parameters across different network conditions.
+\newpage
+\section{AODV Performance Analysis}
+\subsection{Node Count Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/aodv/performance_vs_nodeCount_aodv.png}
+\caption{AODV Performance vs Node Count}
+\end{figure}
+This figure demonstrates how AODV performance varies with different node counts in the network.
+\newpage
+\subsection{Node Speed Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/aodv/performance_vs_nodeSpeed_aodv.png}
+\caption{AODV Performance vs Node Speed}
+\end{figure}
+This analysis shows the impact of node mobility speed on AODV protocol performance.
+\newpage
+\subsection{Packets Per Second Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/aodv/performance_vs_packetsPerSecond_aodv.png}
+\caption{AODV Performance vs Packets Per Second}
+\end{figure}
+This figure shows how packet transmission rate affects AODV performance.
+\newpage
+\section{RAODV Performance Analysis}
+\subsection{Node Count Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/raodv/performance_vs_nodeCount_raodv.png}
+\caption{RAODV Performance vs Node Count}
+\end{figure}
+This figure demonstrates how RAODV performance varies with different node counts.
+\newpage
+\subsection{Node Speed Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/raodv/performance_vs_nodeSpeed_raodv.png}
+\caption{RAODV Performance vs Node Speed}
+\end{figure}
+This analysis shows the impact of node mobility speed on RAODV protocol performance.
+\newpage
+\subsection{Packets Per Second Analysis}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/raodv/performance_vs_packetsPerSecond_raodv.png}
+\caption{RAODV Performance vs Packets Per Second}
+\end{figure}
+This figure shows how packet transmission rate affects RAODV performance.
+\newpage
+\section{AODV vs RAODV Comparison}
+\subsection{Node Count Comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/two-comp/performance_vs_nodeCount_aodv_raodv.png}
+\caption{Node Count Performance Comparison}
+\end{figure}
+This comparison demonstrates the relative performance of AODV and RAODV across different node counts.
+\newpage
+\subsection{Node Speed Comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/two-comp/performance_vs_nodeSpeed_aodv_raodv.png}
+\caption{Node Speed Performance Comparison}
+\end{figure}
+This analysis compares how node mobility speed affects both protocols.
+\newpage
+\subsection{Packets Per Second Comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/two-comp/performance_vs_packetsPerSecond_aodv_raodv.png}
+\caption{Packets Per Second Performance Comparison}
+\end{figure}
+This figure compares how packet transmission rate affects both protocols.
+\newpage
+\section{Multi-variant RAODV Comparison}
+\subsection{Node Count Multi-comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/multi-comp/performance_vs_nodeCount_aodv_raodv_raodv-v1_raodv-v2.png}
+\caption{Node Count Performance Multi-comparison}
+\end{figure}
+This comparison shows performance across different node counts for all protocol variants.
+\newpage
+\subsection{Node Speed Multi-comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/multi-comp/performance_vs_nodeSpeed_aodv_raodv_raodv-v1_raodv-v2.png}
+\caption{Node Speed Performance Multi-comparison}
+\end{figure}
+This analysis compares how node mobility speed affects all protocol variants.
+\newpage
+\subsection{Packets Per Second Multi-comparison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{plots/multi-comp/performance_vs_packetsPerSecond_aodv_raodv_raodv-v1_raodv-v2.png}
+\caption{Packets Per Second Performance Multi-comparison}
+\end{figure}
+This figure compares how packet transmission rate affects all protocol variants.
+\end{document}
