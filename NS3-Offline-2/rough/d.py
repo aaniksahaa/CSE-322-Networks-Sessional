@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+RUN_NUMBER = 3
+
 # Configure flow range here
 FLOW_START = 0  # inclusive
 FLOW_END = 2    # inclusive
@@ -179,7 +181,7 @@ class TCPProtocolPlotter:
 def main():
     # Example usage
     base_dir = "./results"  # Adjust this path as needed
-    run_number = 2  # Adjust run number as needed
+    run_number = RUN_NUMBER  # Adjust run number as needed
     
     plotter = TCPProtocolPlotter(base_dir, run_number)
     plotter.generate_all_plots()
